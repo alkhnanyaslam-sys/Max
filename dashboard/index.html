@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ultra Stream — لوحة التحكم</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #050508;
+      color: #e2e8f0;
+      font-family: 'Cairo', sans-serif;
+      min-height: 100vh;
+    }
+    .bg {
+      background: linear-gradient(-45deg,#050510,#0a0a1a,#05100a,#0a0518);
+      background-size: 400% 400%;
+      animation: bgAnim 12s ease infinite;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    @keyframes bgAnim {
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+    .glass {
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 900; }
+    header h1 span { color: #00ff88; text-shadow: 0 0 10px #00ff88; }
+    .live-dot {
+      width: 8px; height: 8px;
+      background: #00ff88;
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+      box-shadow: 0 0 8px #00ff88;
+    }
+    @keyframes pulse {
+      0%,100%{transform:scale(1);opacity:1}
+      50%{transform:scale(1.4);opacity:.7}
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      padding: 20px;
+      text-align: center;
+      border-radius: 16px;
+    }
+    .stat-card .num {
+      font-size: 2.5rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .stat-card .lbl {
+      font-size: .75rem;
+      color: #555;
+      margin-top: 6px;
+    }
+    .green { color: #00ff88; text-shadow: 0 0 15px #00ff88; }
+    .red   { color: #ff4444; text-shadow: 0 0 15px #ff4444; }
+    .blue  { color: #4488ff; text-shadow: 0 0 15px #4488ff; }
+    .gray  { color: #888; }
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .btn {
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-family: 'Cairo', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-green {
+      background: rgba(0,255,136,.12);
+      border: 1px solid rgba(0,255,136,.25);
+      color: #00ff88;
+    }
+    .btn-green:hover { background: rgba(0,255,136,.22); box-shadow: 0 0 20px rgba(0,255,136,.3); }
+    .btn-red {
+      background: rgba(255,68,68,.12);
+      border: 1px solid rgba(255,68,68,.25);
+      color: #ff4444;
+    }
+    .btn-red:hover { background: rgba(255,68,68,.22); box-shadow: 0 0 20px rgba(255,68,68,.3); }
+    .btn-blue {
+      background: rgba(68,136,255,.12);
+      border: 1px solid rgba(68,136,255,.25);
+      color: #4488ff;
+    }
+    .btn-blue:hover { background: rgba(68,136,255,.22); box-shadow: 0 0 20px rgba(68,136,255,.3); }
+    .channels { margin-bottom: 24px; }
+    .channels h2 { font-size: 1rem; font-weight: 700; margin-bottom: 12px; color: #aaa; }
+    .channel-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,.05);
+      transition: all .2s;
+    }
+    .channel-card:hover { background: rgba(255,255,255,0.05); }
+    .ch-status {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .ch-info { flex: 1; }
+    .ch-name { font-weight: 700; font-size: .9rem; }
+    .ch-sub  { font-size: .75rem; color: #555; margin-top: 2px; }
+    .ch-actions { display: flex; gap: 8px; }
+    .ch-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Cairo', sans-serif;
+      font-size: .75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,255,136,.15);
+      border: 1px solid rgba(0,255,136,.3);
+      color: #00ff88;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: .9rem;
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+<div class="bg">
+  <header class="glass">
+    <h1>Ultra <span>Stream</span> Bot</h1>
+    <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:#555">
+      <span class="live-dot"></span>
+      <span id="sysStatus">جاري التحميل...</span>
+    </div>
+  </header>
+
+  <!-- إحصائيات -->
+  <div class="stats">
+    <div class="stat-card glass">
+      <div class="num green" id="statLive">—</div>
+      <div class="lbl">🟢 بث مباشر</div>
+    </div>
+    <div class="stat-card glass">
+      <div class="num gray" id="statIdle">—</div>
+      <div class="lbl">⚪ متوقف</div>
+    </div>
+    <div class="stat-card glass">
+      <div class="num red" id="statError">—</div>
+      <div class="lbl">🔴 خطأ</div>
+    </div>
+    <div class="stat-card glass">
+      <div class="num blue" id="statTotal">—</div>
+      <div class="lbl">📡 إجمالي</div>
+    </div>
+  </div>
+
+  <!-- أزرار سريعة -->
+  <div class="actions">
+    <button class="btn btn-green" onclick="startAll('mecca')">🕋 تشغيل مكة للكل</button>
+    <button class="btn btn-green" onclick="startAll('madina')">🕌 تشغيل المدينة للكل</button>
+    <button class="btn btn-red"   onclick="stopAll()">⏹ إيقاف الكل</button>
+    <button class="btn btn-blue"  onclick="loadData()">🔄 تحديث</button>
+  </div>
+
+  <!-- القنوات -->
+  <div class="channels glass" style="padding:20px">
+    <h2>📋 القنوات المضافة</h2>
+    <div id="channelsList">
+      <p style="color:#444;text-align:center;padding:20px">جاري التحميل...</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function showToast(msg, type='green') {
+    const t = document.getElementById('toast')
+    t.textContent = msg
+    t.style.borderColor = type === 'red' ? 'rgba(255,68,68,.3)' : 'rgba(0,255,136,.3)'
+    t.style.color = type === 'red' ? '#ff4444' : '#00ff88'
+    t.style.background = type === 'red' ? 'rgba(255,68,68,.15)' : 'rgba(0,255,136,.15)'
+    t.classList.add('show')
+    setTimeout(() => t.classList.remove('show'), 3000)
+  }
+
+  async function loadData() {
+    try {
+      const r = await fetch('/api/status')
+      const d = await r.json()
+      document.getElementById('statLive').textContent  = d.stats.live
+      document.getElementById('statIdle').textContent  = d.stats.idle
+      document.getElementById('statError').textContent = d.stats.error
+      document.getElementById('statTotal').textContent = d.stats.total
+      document.getElementById('sysStatus').textContent = `${d.stats.live} بث مباشر الآن`
+
+      const list = document.getElementById('channelsList')
+      if (!d.channels.length) {
+        list.innerHTML = '<p style="color:#444;text-align:center;padding:20px">لا توجد قنوات بعد — أضف عبر البوت</p>'
+        return
+      }
+      list.innerHTML = d.channels.map(ch => {
+        const isLive  = ch.status === 'live'
+        const isError = ch.status === 'error'
+        const color   = isLive ? '#00ff88' : isError ? '#ff4444' : '#555'
+        const label   = isLive ? 'مباشر' : isError ? 'خطأ' : 'متوقف'
+        return `
+          <div class="channel-card">
+            <div class="ch-status" style="background:${color};box-shadow:0 0 8px ${color}"></div>
+            <div class="ch-info">
+              <div class="ch-name">${ch.title}</div>
+              <div class="ch-sub">${label} · ${ch.uptime} · ${ch.source || '—'}</div>
+            </div>
+            <div class="ch-actions">
+              <button class="ch-btn btn-green" style="background:rgba(0,255,136,.12);border:1px solid rgba(0,255,136,.25);color:#00ff88"
+                onclick="startOne('${ch.id}','mecca')">🕋</button>
+              <button class="ch-btn btn-green" style="background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);color:#00ff88"
+                onclick="startOne('${ch.id}','madina')">🕌</button>
+              <button class="ch-btn btn-red" style="background:rgba(255,68,68,.12);border:1px solid rgba(255,68,68,.25);color:#ff4444"
+                onclick="stopOne('${ch.id}')">⏹</button>
+            </div>
+          </div>
+        `
+      }).join('')
+    } catch(e) {
+      console.error(e)
+    }
+  }
+
+  async function startAll(src) {
+    const r = await fetch('/api/status').then(r=>r.json())
+    for (const ch of r.channels) {
+      await fetch('/api/start', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ chatId: ch.id, source: src }) })
+    }
+    showToast(`✅ تم تشغيل ${src === 'mecca' ? 'مكة' : 'المدينة'} لجميع القنوات`)
+    setTimeout(loadData, 1500)
+  }
+
+  async function stopAll() {
+    const r = await fetch('/api/status').then(r=>r.json())
+    for (const ch of r.channels) {
+      await fetch('/api/stop', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ chatId: ch.id }) })
+    }
+    showToast('⏹ تم إيقاف جميع البثوث', 'red')
+    setTimeout(loadData, 1500)
+  }
+
+  async function startOne(chatId, src) {
+    await fetch('/api/start', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ chatId, source: src }) })
+    showToast('✅ تم تشغيل البث')
+    setTimeout(loadData, 1500)
+  }
+
+  async function stopOne(chatId) {
+    await fetch('/api/stop', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ chatId }) })
+    showToast('⏹ تم إيقاف البث', 'red')
+    setTimeout(loadData, 1500)
+  }
+
+  loadData()
+  setInterval(loadData, 10000)
+</script>
+</body>
+  </html>
