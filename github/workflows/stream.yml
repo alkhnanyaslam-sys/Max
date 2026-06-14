@@ -1,14 +1,14 @@
-name: Ultra Stream Bot — Auto Restart
+name: Ultra Stream Bot — 24/7
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # كل 6 ساعات تلقائياً
-  workflow_dispatch:         # تشغيل يدوي لو احتجت
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   stream:
     runs-on: ubuntu-latest
-    timeout-minutes: 350     # أقصى وقت قبل الإعادة التلقائية
+    timeout-minutes: 350
 
     steps:
       - name: Checkout
@@ -25,11 +25,16 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Stream Bot
+      - name: Restore channels
+        run: |
+          echo '${{ secrets.CHANNELS_JSON }}' > channels.json
+          echo "✅ Channels restored"
+
+      - name: Run Bot
         env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          ADMIN_IDS: ${{ secrets.ADMIN_IDS }}
-          MECCA_STREAM_URL: ${{ secrets.MECCA_STREAM_URL }}
+          BOT_TOKEN:         ${{ secrets.BOT_TOKEN }}
+          ADMIN_IDS:         ${{ secrets.ADMIN_IDS }}
+          MECCA_STREAM_URL:  ${{ secrets.MECCA_STREAM_URL }}
           MADINA_STREAM_URL: ${{ secrets.MADINA_STREAM_URL }}
-          PORT: 3000
+          PORT:              3000
         run: node bot.js
